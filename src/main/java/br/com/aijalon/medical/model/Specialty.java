@@ -36,8 +36,6 @@ public class Specialty {
     private Long specialtyId;
 
     @Column
-    @NotEmpty()
-    @Size(min = 4, max = 20)
     private String name;
 
     @Column

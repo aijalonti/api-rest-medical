@@ -1,61 +1,51 @@
 package br.com.aijalon.medical.service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import br.com.aijalon.medical.dto.DoctorResponse;
 import br.com.aijalon.medical.dto.SpecialtyDoctorResponse;
 import br.com.aijalon.medical.dto.SpecialtyRequest;
 import br.com.aijalon.medical.dto.SpecialtyResponse;
+import br.com.aijalon.medical.exception.ResourceBadRequestException;
 import br.com.aijalon.medical.exception.ResourceNotFoundException;
-import br.com.aijalon.medical.model.Doctor;
+import br.com.aijalon.medical.mappers.SpecialtiesMappers;
 import br.com.aijalon.medical.model.Specialty;
 import br.com.aijalon.medical.repository.SpecialtyRepository;
 
 @Service
 public class SpecialtyService {
     
-    @Autowired
-    private SpecialtyRepository specialtyRepository;
+   @Autowired
+   private SpecialtyRepository specialtyRepository;
     
-    @Autowired
-	private ModelMapper modelMapper;
+   @Autowired
+   private SpecialtiesMappers specialitieMappers;
 
     public Specialty createSpecialty(SpecialtyRequest specialtyRequest) {
-        Specialty specialty = new Specialty();
-        specialty.setName(specialtyRequest.getName());
-        specialty.setDescription(specialtyRequest.getDescription());
-        specialty.setActive(true);
-
+        Specialty specialty = specialitieMappers.requestToDTO(specialtyRequest);
         return specialtyRepository.save(specialty);
     }
-
-    public List<Specialty> find(){
-        return specialtyRepository.findAll();
-    }
     
-    public List<SpecialtyResponse> findAll(){
+    public List<SpecialtyResponse> getAll(){
     	return specialtyRepository.findAll()
     	       .stream()
-    	       .map(this::specialtyToReponse)
+    	       .map(s -> specialitieMappers.specialtyToReponse(s))
     	       .collect(Collectors.toList());
     }
     
-    public SpecialtyResponse findSpecialtyById(Long specialtyId){
+    public SpecialtyResponse getSpecialtyById(Long specialtyId){
     	Specialty specialty = specialtyRepository.findById(specialtyId)
                .orElseThrow(() -> new ResourceNotFoundException("Especialidade com Id:" + specialtyId + " não encontrado"));
-		return specialtyToReponse(specialty);
+		return specialitieMappers.specialtyToReponse(specialty);
     }
     
-    public SpecialtyDoctorResponse findDoctorSpecialtyById(Long specialtyId){
+    public SpecialtyDoctorResponse getDoctorSpecialtyById(Long specialtyId){
     	Specialty specialty = specialtyRepository.findById(specialtyId)
                .orElseThrow(() -> new ResourceNotFoundException("Especialidade com Id:" + specialtyId + " não encontrado"));
-		return specialtyDoctorToReponse(specialty);
+		return specialitieMappers.specialtyDoctorToReponse(specialty);
     }
 
     public Specialty findById(Long id) {
@@ -65,27 +55,17 @@ public class SpecialtyService {
     
     public void updateSpecialty(Long id, SpecialtyRequest specialtyRequest) {
     	Specialty specialty = findById(id);
-    	specialty.setName("Clinico Geral");
-    	specialty.setDescription("Clinico faz consultas");
-    	specialty.setActive(true);
+    	specialitieMappers.requestToModel(specialtyRequest, specialty);
     	specialtyRepository.save(specialty);
     }
 
     public void deleteSpecialty(Long id) {
-       Specialty s = findById(id);
-       specialtyRepository.save(s);
-    }
-    
-    public SpecialtyResponse specialtyToReponse(Specialty specialty) {
-    	return modelMapper.map(specialty, SpecialtyResponse.class);
-    }
-    
-    public SpecialtyDoctorResponse specialtyDoctorToReponse(Specialty specialty) {
-    	return modelMapper.map(specialty, SpecialtyDoctorResponse.class);
-    }
-    
-    public void updateSpecialty2(SpecialtyRequest specialtyRequest, Specialty specialty) {
-    	 modelMapper.map(specialtyRequest, specialty);
-    }
-   
+       Specialty specialty = findById(id);
+       if(specialty.getDoctor().isEmpty()) {
+       specialtyRepository.delete(specialty);
+       
+       }else {
+    	   throw new ResourceBadRequestException("Não é possivel excluir. Existem médicos relacionados a especialidades!");
+       }
+    }     
 }

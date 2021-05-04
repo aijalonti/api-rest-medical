@@ -1,5 +1,7 @@
 package br.com.aijalon.medical.dto;
 
+import javax.validation.constraints.NotBlank;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,12 +10,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class SpecialtyRequest {
-	private Long id;
 	
+	@NotBlank(message = "{name.not.blank}")
 	private String name;
 
     private String description;
-
-    private Boolean active;
 
 }

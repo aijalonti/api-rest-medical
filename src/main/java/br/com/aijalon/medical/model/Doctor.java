@@ -13,11 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -30,19 +25,16 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity(name = "doctor")
-//Não duplica a consulta por causa do manyTomany
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "doctorId")
 public class Doctor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "doctor_id")
     private Long doctorId;
 
     @Column
-    @NotEmpty()
-    @Size(min = 4, max = 20)
     private String name;
     
-    @NotNull()
     @Column(name = "birth_date")
     private String birthDate;
 
