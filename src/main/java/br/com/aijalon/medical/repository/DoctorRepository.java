@@ -7,5 +7,5 @@ import br.com.aijalon.medical.model.Doctor;
 
 @Repository
 public interface DoctorRepository  extends JpaRepository<Doctor, Long>{
-    
+   
 }
